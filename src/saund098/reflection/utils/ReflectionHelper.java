@@ -34,14 +34,19 @@ public class ReflectionHelper {
 			boolean pUseRandomConstructor) {
 		mDefaultValues.putAll(DEFAULT_PRIMITIVE_VALUES);
 
-		mDefaultConstructors.putAll(DEFAULT_CONSTRUCTORS);
+		mUseRandomConstructor = pUseRandomConstructor;
+		if (mUseRandomConstructor) {
+			mDefaultConstructors.putAll(DEFAULT_WRAPPER_CONSTRUCTORS);
+		} else {
+			mDefaultValues.putAll(DEFAULT_WRAPPER_VALUES);
+		}
+
 		if (pDefaultValues != null) {
 			mDefaultValues.putAll(pDefaultValues);
 		}
 		if (pDefaultConstructors != null) {
 			mDefaultConstructors.putAll(pDefaultConstructors);
 		}
-		mUseRandomConstructor = pUseRandomConstructor;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -57,7 +62,7 @@ public class ReflectionHelper {
 			} else if (mUseRandomConstructor) {
 				Constructor<?>[] constructors = pClass.getConstructors();
 				if (constructors.length >= 1) {
-					return (T) reflectFromConstructor(constructors[mRand
+					return (T) reflectFromConstructor(constructors[RAND
 							.nextInt(constructors.length)]);
 				}
 			}
@@ -75,7 +80,7 @@ public class ReflectionHelper {
 			Class<?> parameter = parameters[i];
 			if (parameter.equals(constructorClass)) {
 				throw new IllegalArgumentException(
-						"Provided class constructor requires parameter of the same type which would result in an infinite loop condition");
+						ILLEGAL_ARGUMENT_EXCEPTION_MESSAGE);
 			}
 			args[i] = reflectClass(parameters[i]);
 		}
@@ -86,67 +91,172 @@ public class ReflectionHelper {
 	private final Map<Class<?>, Constructor<?>> mDefaultConstructors = new HashMap<Class<?>, Constructor<?>>();
 	private final boolean mUseRandomConstructor;
 
-	private static final Random mRand = new Random();
+	public static final boolean DEFAULT_BOOLEAN = false;
+	public static final byte DEFAULT_BYTE = (byte) 0;
+	public static final char DEFAULT_CHAR = '\0';
+	public static final double DEFAULT_DOUBLE = (double) 0;
+	public static final float DEFAULT_FLOAT = (float) 0;
+	public static final int DEFAULT_INT = (int) 0;
+	public static final long DEFAULT_LONG = (long) 0;
+	public static final short DEFAULT_SHORT = (short) 0;
+
+	private static final Random RAND = new Random();
+	private static final String ILLEGAL_ARGUMENT_EXCEPTION_MESSAGE = "Provided class constructor requires parameter of the same type which would result in an infinite loop condition";
 	private static final Map<Class<?>, Object> DEFAULT_PRIMITIVE_VALUES = new HashMap<Class<?>, Object>();
-	private static final Map<Class<?>, Constructor<?>> DEFAULT_CONSTRUCTORS = new HashMap<Class<?>, Constructor<?>>();
+	private static final Map<Class<?>, Object> DEFAULT_WRAPPER_VALUES = new HashMap<Class<?>, Object>();
+	private static final Map<Class<?>, Constructor<?>> DEFAULT_WRAPPER_CONSTRUCTORS = new HashMap<Class<?>, Constructor<?>>();
+
 	static {
-		DEFAULT_PRIMITIVE_VALUES.put(Integer.TYPE, Integer.valueOf(0));
-		DEFAULT_PRIMITIVE_VALUES.put(Long.TYPE, Long.valueOf((long) 0));
-		DEFAULT_PRIMITIVE_VALUES.put(Double.TYPE, Double.valueOf((double) 0));
-		DEFAULT_PRIMITIVE_VALUES.put(Float.TYPE, Float.valueOf((float) 0));
-		DEFAULT_PRIMITIVE_VALUES.put(Boolean.TYPE, Boolean.valueOf(false));
-		DEFAULT_PRIMITIVE_VALUES.put(Character.TYPE, Character.valueOf('\0'));
-		DEFAULT_PRIMITIVE_VALUES.put(Byte.TYPE, Byte.valueOf((byte) 0));
-		DEFAULT_PRIMITIVE_VALUES.put(Short.TYPE, Short.valueOf((short) 0));
-		DEFAULT_PRIMITIVE_VALUES.put(Void.TYPE, null);
+		DEFAULT_PRIMITIVE_VALUES.put(Boolean.TYPE, DEFAULT_BOOLEAN);
+		DEFAULT_PRIMITIVE_VALUES.put(Byte.TYPE, DEFAULT_BYTE);
+		DEFAULT_PRIMITIVE_VALUES.put(Character.TYPE, DEFAULT_CHAR);
+		DEFAULT_PRIMITIVE_VALUES.put(Double.TYPE, DEFAULT_DOUBLE);
+		DEFAULT_PRIMITIVE_VALUES.put(Float.TYPE, DEFAULT_FLOAT);
+		DEFAULT_PRIMITIVE_VALUES.put(Integer.TYPE, DEFAULT_INT);
+		DEFAULT_PRIMITIVE_VALUES.put(Long.TYPE, DEFAULT_LONG);
+		DEFAULT_PRIMITIVE_VALUES.put(Short.TYPE, DEFAULT_SHORT);
+
+		/**
+		 * In the event String is not defined as a number/boolean and random
+		 * constructors are not used, these are set to prevent
+		 * NumberFormatException and consistent with non-wrapper classes.
+		 * 
+		 * These default values can be overridden by providing a default value
+		 * mapping in the constructor.
+		 */
+		DEFAULT_WRAPPER_VALUES.put(Boolean.class, null);
+		DEFAULT_WRAPPER_VALUES.put(Byte.class, null);
+		DEFAULT_WRAPPER_VALUES.put(Character.class, null);
+		DEFAULT_WRAPPER_VALUES.put(Double.class, null);
+		DEFAULT_WRAPPER_VALUES.put(Float.class, null);
+		DEFAULT_WRAPPER_VALUES.put(Integer.class, null);
+		DEFAULT_WRAPPER_VALUES.put(Long.class, null);
+		DEFAULT_WRAPPER_VALUES.put(Short.class, null);
+		DEFAULT_WRAPPER_VALUES.put(Void.class, null);
 
 		try {
 			/**
-			 * The following constructors are used since the behavior of
-			 * constructors with String parameter is undefined or exception
-			 * causing
+			 * In the event String is not defined as a number/boolean and random
+			 * constructors are used, these are set to prevent
+			 * NumberFormatExceptions.
+			 * 
+			 * These default constructors can be overridden by providing a
+			 * default value mapping in the constructor.
 			 */
-			DEFAULT_CONSTRUCTORS.put(Integer.class,
-					Integer.class.getConstructor(Integer.TYPE));
-			DEFAULT_CONSTRUCTORS.put(Long.class,
-					Long.class.getConstructor(Long.TYPE));
-			DEFAULT_CONSTRUCTORS.put(Double.class,
-					Double.class.getConstructor(Double.TYPE));
-			DEFAULT_CONSTRUCTORS.put(Float.class,
-					Float.class.getConstructor(Float.TYPE));
-			DEFAULT_CONSTRUCTORS.put(Boolean.class,
+			DEFAULT_WRAPPER_CONSTRUCTORS.put(Boolean.class,
 					Boolean.class.getConstructor(Boolean.TYPE));
-			DEFAULT_CONSTRUCTORS.put(Character.class,
-					Character.class.getConstructor(Character.TYPE));
-			DEFAULT_CONSTRUCTORS.put(Byte.class,
+			DEFAULT_WRAPPER_CONSTRUCTORS.put(Byte.class,
 					Byte.class.getConstructor(Byte.TYPE));
-			DEFAULT_CONSTRUCTORS.put(Short.class,
+			DEFAULT_WRAPPER_CONSTRUCTORS.put(Character.class,
+					Character.class.getConstructor(Character.TYPE));
+			DEFAULT_WRAPPER_CONSTRUCTORS.put(Double.class,
+					Double.class.getConstructor(Double.TYPE));
+			DEFAULT_WRAPPER_CONSTRUCTORS.put(Float.class,
+					Float.class.getConstructor(Float.TYPE));
+			DEFAULT_WRAPPER_CONSTRUCTORS.put(Integer.class,
+					Integer.class.getConstructor(Integer.TYPE));
+			DEFAULT_WRAPPER_CONSTRUCTORS.put(Long.class,
+					Long.class.getConstructor(Long.TYPE));
+			DEFAULT_WRAPPER_CONSTRUCTORS.put(Short.class,
 					Short.class.getConstructor(Short.TYPE));
 		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NoSuchMethodException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
+	private static boolean testIllegalTestClass()
+			throws InstantiationException, IllegalAccessException,
+			InvocationTargetException {
+		IllegalTestClass test = new ReflectionHelper(null, null, false)
+				.<IllegalTestClass> reflectClass(IllegalTestClass.class);
+		assert (test == null);
+		try {
+			new ReflectionHelper(null, null, true)
+					.<IllegalTestClass> reflectClass(IllegalTestClass.class);
+		} catch (IllegalArgumentException e) {
+			return e.getMessage().equals(
+					ReflectionHelper.ILLEGAL_ARGUMENT_EXCEPTION_MESSAGE);
+		}
+		return false;
+	}
+
 	/**
 	 * @param args
+	 * @throws NoSuchMethodException
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws NoSuchMethodException {
 		try {
-			final Map<Class<?>, Object> defaultValues = new HashMap<Class<?>, Object>();
+			TestClass test;
+
+			// Test the case with no default values and only a default
+			// constructor for the TestClass
 			final Map<Class<?>, Constructor<?>> defaultConstructors = new HashMap<Class<?>, Constructor<?>>();
-			defaultValues.put(String.class, "Hello World!");
-			ReflectionHelper reflectionHelper = new ReflectionHelper(
-					defaultValues, defaultConstructors, true);
-			TestClass testClass = reflectionHelper
+			defaultConstructors.put(TestClass.class,
+					TestClass.class.getConstructor(Boolean.class, Boolean.TYPE,
+							Byte.class, Byte.TYPE, Character.class,
+							Character.TYPE, Double.class, Double.TYPE,
+							Float.class, Float.TYPE, Integer.class,
+							Integer.TYPE, Long.class, Long.TYPE, Short.class,
+							Short.TYPE, String.class, Object.class));
+			test = new ReflectionHelper(null, defaultConstructors, false)
 					.<TestClass> reflectClass(TestClass.class);
-			System.out.println(testClass.toString());
-			// IllegalTestClass illegalTestClass = reflectionHelper
-			// .<IllegalTestClass> reflectClass(IllegalTestClass.class);
-			// System.out.println(illegalTestClass.toString());
+			assert (test.getBoolean() == null);
+			assert (test.getBooleanPrimitive() == ReflectionHelper.DEFAULT_BOOLEAN);
+			assert (test.getByte() == null);
+			assert (test.getBytePrimitive() == ReflectionHelper.DEFAULT_BYTE);
+			assert (test.getCharacter() == null);
+			assert (test.getCharPrimitive() == ReflectionHelper.DEFAULT_CHAR);
+			assert (test.getDouble() == null);
+			assert (test.getDoublePrimitive() == ReflectionHelper.DEFAULT_DOUBLE);
+			assert (test.getFloat() == null);
+			assert (test.getFloatPrimitive() == ReflectionHelper.DEFAULT_FLOAT);
+			assert (test.getInteger() == null);
+			assert (test.getIntPrimitive() == ReflectionHelper.DEFAULT_INT);
+			assert (test.getLong() == null);
+			assert (test.getLongPrimitive() == ReflectionHelper.DEFAULT_LONG);
+			assert (test.getShort() == null);
+			assert (test.getShortPrimitive() == ReflectionHelper.DEFAULT_SHORT);
+			assert (test.getString() == null);
+			assert (test.getObject() == null);
+
+			// Test the case with default string value, default constructor for
+			// the TestClass, and random constructors.
+			String testString = "Hello World!";
+			final Map<Class<?>, Object> defaultValues = new HashMap<Class<?>, Object>();
+			defaultValues.put(String.class, testString);
+			test = new ReflectionHelper(defaultValues, defaultConstructors,
+					true).<TestClass> reflectClass(TestClass.class);
+			assert (test.getBoolean().equals(Boolean
+					.valueOf(ReflectionHelper.DEFAULT_BOOLEAN)));
+			assert (test.getBooleanPrimitive() == ReflectionHelper.DEFAULT_BOOLEAN);
+			assert (test.getByte().equals(Byte
+					.valueOf(ReflectionHelper.DEFAULT_BYTE)));
+			assert (test.getBytePrimitive() == ReflectionHelper.DEFAULT_BYTE);
+			assert (test.getCharacter().equals(Character
+					.valueOf(ReflectionHelper.DEFAULT_CHAR)));
+			assert (test.getCharPrimitive() == ReflectionHelper.DEFAULT_CHAR);
+			assert (test.getDouble().equals(Double
+					.valueOf(ReflectionHelper.DEFAULT_DOUBLE)));
+			assert (test.getDoublePrimitive() == ReflectionHelper.DEFAULT_DOUBLE);
+			assert (test.getFloat().equals(Float
+					.valueOf(ReflectionHelper.DEFAULT_FLOAT)));
+			assert (test.getFloatPrimitive() == ReflectionHelper.DEFAULT_FLOAT);
+			assert (test.getInteger().equals(Integer
+					.valueOf(ReflectionHelper.DEFAULT_INT)));
+			assert (test.getIntPrimitive() == ReflectionHelper.DEFAULT_INT);
+			assert (test.getLong().equals(Long
+					.valueOf(ReflectionHelper.DEFAULT_LONG)));
+			assert (test.getLongPrimitive() == ReflectionHelper.DEFAULT_LONG);
+			assert (test.getShort().equals(Short
+					.valueOf(ReflectionHelper.DEFAULT_SHORT)));
+			assert (test.getShortPrimitive() == ReflectionHelper.DEFAULT_SHORT);
+			assert (test.getString().equals(testString));
+			assert (!test.getObject().equals(new Object()));
+
+			// Validate IllegalTestClass behavior
+			assert (testIllegalTestClass());
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		} catch (SecurityException e) {

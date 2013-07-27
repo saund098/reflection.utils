@@ -1,114 +1,121 @@
 package saund098.reflection.utils;
+
 public class TestClass {
 
-	public TestClass(int pIntPrimitive, long pLongPrimitive,
-			double pDoublePrimitive, float pFloatPrimitive,
-			boolean pBooleanPrimitive, char pCharPrimitive,
-			byte pBytePrimitive, short pShortPrimitive, Integer pInteger,
-			Long pLong, Double pDouble, Float pFloat, Boolean pBoolean,
-			Character pCharacter, Byte pByte, Short pShort, String pString) {
-		mIntPrimitive = pIntPrimitive;
-		mLongPrimitive = pLongPrimitive;
-		mDoublePrimitive = pDoublePrimitive;
-		mFloatPrimitive = pFloatPrimitive;
-		mBooleanPrimitive = pBooleanPrimitive;
-		mCharPrimitive = pCharPrimitive;
-		mBytePrimitive = pBytePrimitive;
-		mShortPrimitive = pShortPrimitive;
-		mInteger = pInteger;
-		mLong = pLong;
-		mDouble = pDouble;
-		mFloat = pFloat;
+	public TestClass(Boolean pBoolean, boolean pBooleanPrimitive, Byte pByte,
+			byte pBytePrimitive, Character pCharacter, char pCharPrimitive,
+			Double pDouble, double pDoublePrimitive, Float pFloat,
+			float pFloatPrimitive, Integer pInteger, int pIntPrimitive,
+			Long pLong, long pLongPrimitive, Short pShort,
+			short pShortPrimitive, String pString, Object pObject) {
 		mBoolean = pBoolean;
-		mCharacter = pCharacter;
+		mBooleanPrimitive = pBooleanPrimitive;
 		mByte = pByte;
+		mBytePrimitive = pBytePrimitive;
+		mCharacter = pCharacter;
+		mCharPrimitive = pCharPrimitive;
+		mDouble = pDouble;
+		mDoublePrimitive = pDoublePrimitive;
+		mFloat = pFloat;
+		mFloatPrimitive = pFloatPrimitive;
+		mInteger = pInteger;
+		mIntPrimitive = pIntPrimitive;
+		mLong = pLong;
+		mLongPrimitive = pLongPrimitive;
 		mShort = pShort;
+		mShortPrimitive = pShortPrimitive;
 		mString = pString;
-	}
-
-	public int getIntPrimitive() {
-		return mIntPrimitive;
-	}
-
-	public long getLongPrimitive() {
-		return mLongPrimitive;
-	}
-
-	public double getDoublePrimitive() {
-		return mDoublePrimitive;
-	}
-
-	public float getFloatPrimitive() {
-		return mFloatPrimitive;
-	}
-
-	public boolean isBooleanPrimitive() {
-		return mBooleanPrimitive;
-	}
-
-	public char getCharPrimitive() {
-		return mCharPrimitive;
-	}
-
-	public byte getBytePrimitive() {
-		return mBytePrimitive;
-	}
-
-	public short getShortPrimitive() {
-		return mShortPrimitive;
-	}
-
-	public Integer getInteger() {
-		return mInteger;
-	}
-
-	public Long getLong() {
-		return mLong;
-	}
-
-	public Double getDouble() {
-		return mDouble;
-	}
-
-	public Float getFloat() {
-		return mFloat;
+		mObject = pObject;
 	}
 
 	public Boolean getBoolean() {
 		return mBoolean;
 	}
 
-	public Character getCharacter() {
-		return mCharacter;
+	public boolean getBooleanPrimitive() {
+		return mBooleanPrimitive;
 	}
 
 	public Byte getByte() {
 		return mByte;
 	}
 
+	public byte getBytePrimitive() {
+		return mBytePrimitive;
+	}
+
+	public Character getCharacter() {
+		return mCharacter;
+	}
+
+	public char getCharPrimitive() {
+		return mCharPrimitive;
+	}
+
+	public Double getDouble() {
+		return mDouble;
+	}
+
+	public double getDoublePrimitive() {
+		return mDoublePrimitive;
+	}
+
+	public Float getFloat() {
+		return mFloat;
+	}
+
+	public float getFloatPrimitive() {
+		return mFloatPrimitive;
+	}
+
+	public Integer getInteger() {
+		return mInteger;
+	}
+
+	public int getIntPrimitive() {
+		return mIntPrimitive;
+	}
+
+	public Long getLong() {
+		return mLong;
+	}
+
+	public long getLongPrimitive() {
+		return mLongPrimitive;
+	}
+
 	public Short getShort() {
 		return mShort;
+	}
+
+	public short getShortPrimitive() {
+		return mShortPrimitive;
 	}
 
 	public String getString() {
 		return mString;
 	}
 
-	private final int mIntPrimitive;
-	private final long mLongPrimitive;
-	private final double mDoublePrimitive;
-	private final float mFloatPrimitive;
-	private final boolean mBooleanPrimitive;
-	private final char mCharPrimitive;
-	private final byte mBytePrimitive;
-	private final short mShortPrimitive;
-	private final Integer mInteger;
-	private final Long mLong;
-	private final Double mDouble;
-	private final Float mFloat;
+	public Object getObject() {
+		return mObject;
+	}
+
 	private final Boolean mBoolean;
-	private final Character mCharacter;
+	private final boolean mBooleanPrimitive;
 	private final Byte mByte;
+	private final byte mBytePrimitive;
+	private final Character mCharacter;
+	private final char mCharPrimitive;
+	private final Double mDouble;
+	private final double mDoublePrimitive;
+	private final Float mFloat;
+	private final float mFloatPrimitive;
+	private final Integer mInteger;
+	private final int mIntPrimitive;
+	private final Long mLong;
+	private final long mLongPrimitive;
 	private final Short mShort;
+	private final short mShortPrimitive;
 	private final String mString;
+	private final Object mObject;
 }
