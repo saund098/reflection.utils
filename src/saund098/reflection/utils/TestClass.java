@@ -2,14 +2,17 @@ package saund098.reflection.utils;
 
 public class TestClass {
 
-	public TestClass(Boolean pBoolean, boolean pBooleanPrimitive, Byte pByte,
-			byte pBytePrimitive, Character pCharacter, char pCharPrimitive,
-			Double pDouble, double pDoublePrimitive, Float pFloat,
-			float pFloatPrimitive, Integer pInteger, int pIntPrimitive,
-			Long pLong, long pLongPrimitive, Short pShort,
+	public TestClass(Boolean pBoolean, Boolean[] pBooleanArray,
+			boolean pBooleanPrimitive, boolean[] pBooleanPrimitiveArray,
+			Byte pByte, byte pBytePrimitive, Character pCharacter,
+			char pCharPrimitive, Double pDouble, double pDoublePrimitive,
+			Float pFloat, float pFloatPrimitive, Integer pInteger,
+			int pIntPrimitive, Long pLong, long pLongPrimitive, Short pShort,
 			short pShortPrimitive, String pString, Object pObject) {
 		mBoolean = pBoolean;
+		mBooleanArray = pBooleanArray;
 		mBooleanPrimitive = pBooleanPrimitive;
+		mBooleanPrimitiveArray = pBooleanPrimitiveArray;
 		mByte = pByte;
 		mBytePrimitive = pBytePrimitive;
 		mCharacter = pCharacter;
@@ -32,8 +35,16 @@ public class TestClass {
 		return mBoolean;
 	}
 
+	public Boolean[] getBooleanArray() {
+		return mBooleanArray;
+	}
+
 	public boolean getBooleanPrimitive() {
 		return mBooleanPrimitive;
+	}
+
+	public boolean[] getBooleanPrimitiveArray() {
+		return mBooleanPrimitiveArray;
 	}
 
 	public Byte getByte() {
@@ -101,7 +112,9 @@ public class TestClass {
 	}
 
 	private final Boolean mBoolean;
+	private final Boolean[] mBooleanArray;
 	private final boolean mBooleanPrimitive;
+	private final boolean[] mBooleanPrimitiveArray;
 	private final Byte mByte;
 	private final byte mBytePrimitive;
 	private final Character mCharacter;

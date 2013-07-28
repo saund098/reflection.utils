@@ -1,5 +1,6 @@
 package saund098.reflection.utils;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -22,6 +23,10 @@ public class ReflectionHelper {
 	 *            mapping of default values to use
 	 * @param pDefaultConstructors
 	 *            mapping of default class constructors to use
+	 * @param pArrayLength
+	 *            length to use for arrays, a null value or negative length
+	 *            results in null arrays, 0 results in empty arrays, 1 results
+	 *            in a single element array, and so on.
 	 * @param pUseRandomConstructor
 	 *            flag specifying the condition for using random constructors or
 	 *            not. When this is false, any classes without specified
@@ -31,8 +36,10 @@ public class ReflectionHelper {
 	 */
 	public ReflectionHelper(Map<Class<?>, Object> pDefaultValues,
 			Map<Class<?>, Constructor<?>> pDefaultConstructors,
-			boolean pUseRandomConstructor) {
+			Integer pArrayLength, boolean pUseRandomConstructor) {
 		mDefaultValues.putAll(DEFAULT_PRIMITIVE_VALUES);
+
+		mArrayLength = pArrayLength;
 
 		mUseRandomConstructor = pUseRandomConstructor;
 		if (mUseRandomConstructor) {
@@ -53,21 +60,33 @@ public class ReflectionHelper {
 	public <T> T reflectClass(Class<T> pClass) throws IllegalArgumentException,
 			InstantiationException, IllegalAccessException,
 			InvocationTargetException {
+		T obj = null;
 		if (pClass != null) {
 			if (mDefaultValues.containsKey(pClass)) {
-				return (T) mDefaultValues.get(pClass);
+				obj = (T) mDefaultValues.get(pClass);
 			} else if (mDefaultConstructors.containsKey(pClass)) {
-				return (T) reflectFromConstructor(mDefaultConstructors
+				obj = (T) reflectFromConstructor(mDefaultConstructors
 						.get(pClass));
+			} else if (pClass.isArray()) {
+				Class<?> component = pClass.getComponentType();
+				if (mArrayLength == null || mArrayLength.intValue() < 0) {
+					obj = null;
+				} else {
+					obj = (T) Array.newInstance(component,
+							mArrayLength.intValue());
+					for (int i = 0; i < Array.getLength(obj); i++) {
+						Array.set(obj, i, reflectClass(component));
+					}
+				}
 			} else if (mUseRandomConstructor) {
 				Constructor<?>[] constructors = pClass.getConstructors();
 				if (constructors.length >= 1) {
-					return (T) reflectFromConstructor(constructors[RAND
+					obj = (T) reflectFromConstructor(constructors[RAND
 							.nextInt(constructors.length)]);
 				}
 			}
 		}
-		return null;
+		return obj;
 	}
 
 	public <T> T reflectFromConstructor(Constructor<T> pConstructor)
@@ -89,6 +108,7 @@ public class ReflectionHelper {
 
 	private final Map<Class<?>, Object> mDefaultValues = new HashMap<Class<?>, Object>();
 	private final Map<Class<?>, Constructor<?>> mDefaultConstructors = new HashMap<Class<?>, Constructor<?>>();
+	private final Integer mArrayLength;
 	private final boolean mUseRandomConstructor;
 
 	public static final boolean DEFAULT_BOOLEAN = false;
@@ -169,11 +189,11 @@ public class ReflectionHelper {
 	private static boolean testIllegalTestClass()
 			throws InstantiationException, IllegalAccessException,
 			InvocationTargetException {
-		IllegalTestClass test = new ReflectionHelper(null, null, false)
+		IllegalTestClass test = new ReflectionHelper(null, null, null, false)
 				.<IllegalTestClass> reflectClass(IllegalTestClass.class);
 		assert (test == null);
 		try {
-			new ReflectionHelper(null, null, true)
+			new ReflectionHelper(null, null, null, true)
 					.<IllegalTestClass> reflectClass(IllegalTestClass.class);
 		} catch (IllegalArgumentException e) {
 			return e.getMessage().equals(
@@ -194,16 +214,19 @@ public class ReflectionHelper {
 			// constructor for the TestClass
 			final Map<Class<?>, Constructor<?>> defaultConstructors = new HashMap<Class<?>, Constructor<?>>();
 			defaultConstructors.put(TestClass.class,
-					TestClass.class.getConstructor(Boolean.class, Boolean.TYPE,
+					TestClass.class.getConstructor(Boolean.class,
+							Boolean[].class, Boolean.TYPE, boolean[].class,
 							Byte.class, Byte.TYPE, Character.class,
 							Character.TYPE, Double.class, Double.TYPE,
 							Float.class, Float.TYPE, Integer.class,
 							Integer.TYPE, Long.class, Long.TYPE, Short.class,
 							Short.TYPE, String.class, Object.class));
-			test = new ReflectionHelper(null, defaultConstructors, false)
+			test = new ReflectionHelper(null, defaultConstructors, null, false)
 					.<TestClass> reflectClass(TestClass.class);
 			assert (test.getBoolean() == null);
+			assert (test.getBooleanArray() == null);
 			assert (test.getBooleanPrimitive() == ReflectionHelper.DEFAULT_BOOLEAN);
+			assert (test.getBooleanPrimitiveArray() == null);
 			assert (test.getByte() == null);
 			assert (test.getBytePrimitive() == ReflectionHelper.DEFAULT_BYTE);
 			assert (test.getCharacter() == null);
@@ -221,39 +244,57 @@ public class ReflectionHelper {
 			assert (test.getString() == null);
 			assert (test.getObject() == null);
 
-			// Test the case with default string value, default constructor for
-			// the TestClass, and random constructors.
 			String testString = "Hello World!";
 			final Map<Class<?>, Object> defaultValues = new HashMap<Class<?>, Object>();
 			defaultValues.put(String.class, testString);
-			test = new ReflectionHelper(defaultValues, defaultConstructors,
-					true).<TestClass> reflectClass(TestClass.class);
-			assert (test.getBoolean().equals(Boolean
-					.valueOf(ReflectionHelper.DEFAULT_BOOLEAN)));
-			assert (test.getBooleanPrimitive() == ReflectionHelper.DEFAULT_BOOLEAN);
-			assert (test.getByte().equals(Byte
-					.valueOf(ReflectionHelper.DEFAULT_BYTE)));
-			assert (test.getBytePrimitive() == ReflectionHelper.DEFAULT_BYTE);
-			assert (test.getCharacter().equals(Character
-					.valueOf(ReflectionHelper.DEFAULT_CHAR)));
-			assert (test.getCharPrimitive() == ReflectionHelper.DEFAULT_CHAR);
-			assert (test.getDouble().equals(Double
-					.valueOf(ReflectionHelper.DEFAULT_DOUBLE)));
-			assert (test.getDoublePrimitive() == ReflectionHelper.DEFAULT_DOUBLE);
-			assert (test.getFloat().equals(Float
-					.valueOf(ReflectionHelper.DEFAULT_FLOAT)));
-			assert (test.getFloatPrimitive() == ReflectionHelper.DEFAULT_FLOAT);
-			assert (test.getInteger().equals(Integer
-					.valueOf(ReflectionHelper.DEFAULT_INT)));
-			assert (test.getIntPrimitive() == ReflectionHelper.DEFAULT_INT);
-			assert (test.getLong().equals(Long
-					.valueOf(ReflectionHelper.DEFAULT_LONG)));
-			assert (test.getLongPrimitive() == ReflectionHelper.DEFAULT_LONG);
-			assert (test.getShort().equals(Short
-					.valueOf(ReflectionHelper.DEFAULT_SHORT)));
-			assert (test.getShortPrimitive() == ReflectionHelper.DEFAULT_SHORT);
-			assert (test.getString().equals(testString));
-			assert (!test.getObject().equals(new Object()));
+
+			// Test the case with default string value, default constructor for
+			// the TestClass, various sized arrays, and random
+			// constructors.
+			for (int arrLen = -5; arrLen < 10; arrLen++) {
+				test = new ReflectionHelper(defaultValues, defaultConstructors,
+						arrLen, true).<TestClass> reflectClass(TestClass.class);
+				assert (test.getBoolean().equals(Boolean
+						.valueOf(ReflectionHelper.DEFAULT_BOOLEAN)));
+				if (arrLen < 0) {
+					assert (test.getBooleanArray() == null);
+				} else {
+					assert (test.getBooleanArray().length == arrLen);
+					assert (test.getBooleanArray().getClass()
+							.getComponentType() == Boolean.class);
+				}
+				assert (test.getBooleanPrimitive() == ReflectionHelper.DEFAULT_BOOLEAN);
+				if (arrLen < 0) {
+					assert (test.getBooleanPrimitiveArray() == null);
+				} else {
+					assert (test.getBooleanPrimitiveArray().length == arrLen);
+					assert (test.getBooleanPrimitiveArray().getClass()
+							.getComponentType() == Boolean.TYPE);
+				}
+				assert (test.getByte().equals(Byte
+						.valueOf(ReflectionHelper.DEFAULT_BYTE)));
+				assert (test.getBytePrimitive() == ReflectionHelper.DEFAULT_BYTE);
+				assert (test.getCharacter().equals(Character
+						.valueOf(ReflectionHelper.DEFAULT_CHAR)));
+				assert (test.getCharPrimitive() == ReflectionHelper.DEFAULT_CHAR);
+				assert (test.getDouble().equals(Double
+						.valueOf(ReflectionHelper.DEFAULT_DOUBLE)));
+				assert (test.getDoublePrimitive() == ReflectionHelper.DEFAULT_DOUBLE);
+				assert (test.getFloat().equals(Float
+						.valueOf(ReflectionHelper.DEFAULT_FLOAT)));
+				assert (test.getFloatPrimitive() == ReflectionHelper.DEFAULT_FLOAT);
+				assert (test.getInteger().equals(Integer
+						.valueOf(ReflectionHelper.DEFAULT_INT)));
+				assert (test.getIntPrimitive() == ReflectionHelper.DEFAULT_INT);
+				assert (test.getLong().equals(Long
+						.valueOf(ReflectionHelper.DEFAULT_LONG)));
+				assert (test.getLongPrimitive() == ReflectionHelper.DEFAULT_LONG);
+				assert (test.getShort().equals(Short
+						.valueOf(ReflectionHelper.DEFAULT_SHORT)));
+				assert (test.getShortPrimitive() == ReflectionHelper.DEFAULT_SHORT);
+				assert (test.getString().equals(testString));
+				assert (!test.getObject().equals(new Object()));
+			}
 
 			// Validate IllegalTestClass behavior
 			assert (testIllegalTestClass());
